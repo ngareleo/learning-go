@@ -2,7 +2,7 @@ module learninggo/hello
 
 go 1.22.2
 
-replace learninggo/greetings => ../greetings
+replace learninggo/greetings => ../00-greetings
 
 require (
 	learninggo/greetings v0.0.0-00010101000000-000000000000

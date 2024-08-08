@@ -5,9 +5,14 @@ import (
 	"slices"
 )
 
+// Go runtime
+// The runtime is responsible for memory allocation, garbage collection, network, IO etc
+// Unlike most languages that depend execute on a virtual environment,
+// When we compile go code, the compiler writes the go runtime into the binary
+// So when you ship go binary, you don't need a go environment. Downside is that binaries become big at-least 2MB
 func main() {
 	/////////////////////////////////////////////////////////
-	///////////// Arrays
+	///////////// Arrays   ////////////////////////////////
 	/////////////////////////////////////////////////////////
 	var a [3] int // We have created a list of integers called x
 	// By default all three elements are {0, 0, 0} due to Go's default assignment
@@ -37,7 +42,7 @@ func main() {
 	
 
 	/////////////////////////////////////////////////////////
-	///////////// Slices
+	///////////// Slices ///////////////////////////////////
 	/////////////////////////////////////////////////////////
 
 	// Slices are like arrays in that they can hold multiple values but can be of variable sizes
@@ -57,16 +62,16 @@ func main() {
 	j := h == nil
 	fmt.Println("So is it nill?", j)
 	///////////// Handling slices ///////////////////////////////////	
-	/////////////////// Compare a slice as long as the elements are comparable using `Equal`
+	/////////////////// Compare a slice as long as the elements are comparable using `Equal` ////////////////////////////////////////
 	k := slices.Equal(f, g)
 	fmt.Println("Are {f & g} they the same?", k)
 	var l = [] string {"red", "green", "blue"}
 	// fmt.Println(slices.Equal(g, l)) We cannot compare the two (Strings and Ints)
-	////////////////// Get sizes 
+	////////////////// Get sizes ////////////////////////////////////////
 	m := len(l)
 	n := len(h)
 	fmt.Printf("Sizes of l {%d} and h {%d}\n", m, n) // H is nill but we get sizes 0
-	///////////////// Grow sizes
+	///////////////// Grow sizes ////////////////////////////////////////
 	// o := append(l, "orange") // It a pure function. 
 	// To avoid growing mem
 	l = append(l, "orange")
@@ -77,4 +82,30 @@ func main() {
 	// I can merge h with f like so
 	h = append(h, f...)
 	fmt.Println("Now h has grown to ", h)
+	////////////// Capacity ////////////////////////////////////////
+	// Length of a size provided by `len()` gives us the number of elements currently allocated in a slice
+	// However, the go runtime assigns extra memory (to give room during cycles where a call to `append` 
+	// doesn't need invocation of garbage collector and mem allocator to create more memory). The thread can just add the element
+	// To get the capacity of a slice use `cap()`
+	fmt.Printf("The length of h is %d but capacity is %d\n", len(h), cap(h))
+	// But if you know the size of the slice ahead of time you can use `make()` to create a slice
+	i := make([]int, 2) // creates a slice of capacity 10
+
+	// However, we have a gotcha here. If we try to
+	fmt.Println("Lets use append on I. We get ", append(i, 10)) // [0 0 10]
+	// This is because append always increases the length of the slice
+	// To achieve *creating a pre-allocated capacity slice then immediately populate it* you can do this
+	p := make([]string, 0, 20) // 0 is the length and 20 is the capacity. 
+	p = append(append(p, l...), "purple") // add elements of l then purple at the end
+	fmt.Println("P is now ", p)
+	////////////// Clear ////////////////////////////////////////
+	// Calling `clear` sets all elements to their default value BUT keeps the length the same
+	// It mutates the slice
+	clear(p)
+	fmt.Println("Now we don't have any colors 😞", p)
+	fmt.Printf("But p has cap(%d) and len(%d)\n", cap(p), len(p))
+	// Tip: Ideally, it better to wasted memory than wasting cycles recollecting and reallocating memory
+	// So if you know ahead of time, that a slice will take up 1000 elements max, just allocate 1000 capacity
+	// even if you add 40 elements
+	// instead of slowly growing memory to 40, just take the cost but again, it depends on use-case
  }

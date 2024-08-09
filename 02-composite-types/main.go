@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 )
 
@@ -11,9 +12,11 @@ import (
 // When we compile go code, the compiler writes the go runtime into the binary
 // So when you ship go binary, you don't need a go environment. Downside is that binaries become big at-least 2MB
 func main() {
+
 	/////////////////////////////////////////////////////////
 	///////////// Arrays   ////////////////////////////////
 	/////////////////////////////////////////////////////////
+
 	var a [3] int // We have created a list of integers called x
 	// By default all three elements are {0, 0, 0} due to Go's default assignment
 	var b  = [3] int {0, 0, 0} // b and a have the same value
@@ -29,7 +32,7 @@ func main() {
 	var d = [...] int {1, 2, 3, 4, 5} // a little bit too verbose
 	var e [2][3] int // We have ourselves a multi-dim array
 	fmt.Println("E ", e)
-	///////////// Handling arrays ///////////////////////////////////
+	///////////// Handling arrays 
 	fmt.Println("Can't count, here is length of d ", len(d))
 	// Here's a kicker though
 	// Arrays are rarely used in Go because of their limitations
@@ -62,16 +65,16 @@ func main() {
 	j := h == nil
 	fmt.Println("So is it nill?", j)
 	///////////// Handling slices ///////////////////////////////////	
-	/////////////////// Compare a slice as long as the elements are comparable using `Equal` ////////////////////////////////////////
+	/////////////////// Compare a slice as long as the elements are comparable using `Equal`
 	k := slices.Equal(f, g)
 	fmt.Println("Are {f & g} they the same?", k)
 	var l = [] string {"red", "green", "blue"}
 	// fmt.Println(slices.Equal(g, l)) We cannot compare the two (Strings and Ints)
-	////////////////// Get sizes ////////////////////////////////////////
+	////////////////// Get sizes 
 	m := len(l)
 	n := len(h)
 	fmt.Printf("Sizes of l {%d} and h {%d}\n", m, n) // H is nill but we get sizes 0
-	///////////////// Grow sizes ////////////////////////////////////////
+	///////////////// Grow sizes 
 	// o := append(l, "orange") // It a pure function. 
 	// To avoid growing mem
 	l = append(l, "orange")
@@ -82,7 +85,7 @@ func main() {
 	// I can merge h with f like so
 	h = append(h, f...)
 	fmt.Println("Now h has grown to ", h)
-	////////////// Capacity ////////////////////////////////////////
+	////////////// Capacity 
 	// Length of a size provided by `len()` gives us the number of elements currently allocated in a slice
 	// However, the go runtime assigns extra memory (to give room during cycles where a call to `append` 
 	// doesn't need invocation of garbage collector and mem allocator to create more memory). The thread can just add the element
@@ -90,7 +93,6 @@ func main() {
 	fmt.Printf("The length of h is %d but capacity is %d\n", len(h), cap(h))
 	// But if you know the size of the slice ahead of time you can use `make()` to create a slice
 	i := make([]int, 2) // creates a slice of capacity 10
-
 	// However, we have a gotcha here. If we try to
 	fmt.Println("Lets use append on I. We get ", append(i, 10)) // [0 0 10]
 	// This is because append always increases the length of the slice
@@ -98,7 +100,7 @@ func main() {
 	p := make([]string, 0, 20) // 0 is the length and 20 is the capacity. 
 	p = append(append(p, l...), "purple") // add elements of l then purple at the end
 	fmt.Println("P is now ", p)
-	////////////// Clear ////////////////////////////////////////
+	////////////// Clear 
 	// Calling `clear` sets all elements to their default value BUT keeps the length the same
 	// It mutates the slice
 	clear(p)
@@ -108,4 +110,110 @@ func main() {
 	// So if you know ahead of time, that a slice will take up 1000 elements max, just allocate 1000 capacity
 	// even if you add 40 elements
 	// instead of slowly growing memory to 40, just take the cost but again, it depends on use-case
+
+	// Slices from slices
+	// They work pretty much like slices in python [start:end]
+	q := l[:2] // First two elements of L
+	fmt.Println("Slice of L ", q)
+	// HOWEVER, q shares memory with the original L, so any change to q changes L. So be careful
+	q[0] = "yellow"
+	fmt.Println("You've changed L too. See! ", l) 
+	// Rule of thumb to make things easier for self, do not use `append()` with sub-slices
+
+	// To make copies that don't overwrite each other, you can use the `copy()` function
+
+	r := make([]string, 5)
+	copy(r, l) // Copy takes, (destination_slice, source_slice) and copies values from source to dest until one of them runs out of elements
+	// It returns the number of elements copied. So you can ignore
+	fmt.Println("R now looks like ", r)
+	// and if I change r
+	r[0] = "teal"
+	fmt.Printf("R now is %d and L is still %d\n", r, l)
+
+	// Take array d we created at the beginning, you can convert to slice by
+	s := d[:] 
+	// Now we can grow s
+	s = append(s, 32)
+	fmt.Println("We converted d to a slice and now we grew it to ", s) // not the array but the slice
+
+	 
+	//////////////////////////////////////////////////////////
+	///////////// Strings ///////////////////////////////////
+	//////////////////////////////////////////////////////////
+
+	// You can fuvk around with strings the same way as slices in terms of indexing and slicing so:
+	t := "don't stop"
+	fmt.Println("Don't ..", t[6:])
+	// conversions in Go play very much like in C like
+	fmt.Println("D in 'don't' we get", int(t[0]))
+	fmt.Println("We can get bytes in a string like ", []byte(t))
+
+
+	//////////////////////////////////////////////////////////
+	///////////// Maps /////////////////////////////////////
+	/////////////////////////////////////////////////////////
+
+	// In Go you declare maps like map[KeyType]ValueType
+	var u map[string]int // U is a nill
+	fmt.Println("U ", u)
+	// You can also declare a map like:
+	v := map[string]int{
+		"red": 1,
+		"blue": 2,
+		"green": 3, // You must add a trailing comma
+	}
+	fmt.Println("V ", v)
+
+	// If you know the size you expect ahead of time you could
+	w := make(map[string][]int, 10)
+	// Maps are like slices, in that 
+	// 1. They grow in size
+	// 2. `len` gives you the number of items (key-value) pairs
+	// 3. Default value is `nill`
+	w["purple"] = []int {255, 0, 255}
+	w["red"] = []int {255, 0, 0}
+	fmt.Println("w looks like ", w)
+	// You can use this syntax called `Comma ok idiom` to tell the difference between assigned keys and nil values like so
+	x, y := w["blue"] // x, is the value, y, is True is "purple exists" and vice-versa
+	fmt.Printf("Value is %s, Was is assigned? %d\n", x, y)
+	// You can delete a key by using `delete()` 
+	// The first argument is the map, the second arg is the key
+	delete(w, "purple")
+	// You can also empty a map using `clear()`
+	clear(w) // It deletes everything and sets the map length to 0
+
+	// You can check equality using
+	z := map[string]int{
+		"red": 1,
+		"green": 3,
+		"blue": 2,
+	}
+	aa := maps.Equal(v, z) 
+	fmt.Println("Are the two maps equal? ", aa)
+
+	//////////////////////////////////////////////////////////
+	///////////// Structs /////////////////////////////////////
+	/////////////////////////////////////////////////////////
+
+	type vehicle struct {
+		year int
+		wheels int
+		model string
+	}
+
+	golf := vehicle {
+		year: 2000,
+		wheels: 4,
+		model: "Volkswagen",
+	}
+	fmt.Println("Sample vehicle ", golf)
+	// You can create anonymous structs on the fly
+	user := struct {
+		name string
+		age int
+	}{
+		name: "Traveller Joe",
+		age: 2000,
+	}
+	fmt.Println("Sample user ", user)
  }

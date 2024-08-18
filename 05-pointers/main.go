@@ -1,7 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 )
 
@@ -13,9 +16,56 @@ type Person struct {
 func sayMyNameLoudly (name *string) {
 	if name != nil {
 		upCaseName := strings.ToUpper(*name)
-		fmt.Println("Ladies and gentlemen, introducing!!!!", upCaseName, "Clap everybody")
+		fmt.Println("Ladies and gentlemen, introducing!!!", upCaseName, "Clap everybody!!!")
 	}
 }
+
+func multiplySecondValue (arr []int) {
+	if len(arr) >= 2 {
+		arr[1] *= 2
+	}
+}
+
+// This is pretty bad, haven't yet dealt with IO but excuse me, trying to put a point across
+func capitalizeNamesFromFile (fn string) {
+	file, err := os.Open(fn)
+	if err != nil {
+		fmt.Println("Something went wrong ", err) 
+		return 
+	}
+	defer file.Close()
+	wordCount := 0
+	// The point is, don't litter please!
+	// Whenever you are dealing with pointers, don't create them haphazardly, and leave them
+	// Instead, put them together because it makes it easier for the garbage collector to collect them
+	// It's called mechanical sympathy. We know that reading a continuous location in memory is faster than reading as many
+	// scattered memory locations
+
+	// The Go Garbage collector (GC) runs whenever the heap size reaches a set-maximum size
+	// So whenever it runs, the quicker it can read from memory the faster the GC will finish and the faster
+	// the thread will go back to execution
+	data := make([]byte, 100)
+	names := make([]string, 100)
+	for {
+		_, err = file.Read(data)
+		for _, v := range(data) {
+			if rune(v) == '\n' {
+				names = append(names, "")
+				wordCount ++
+			} else {
+				names[wordCount] += string(v)
+			}
+		}
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				fmt.Println("reached EOF")
+			}
+			fmt.Println("Names found ", names)
+			return
+		}
+	}
+	
+} 
 
 // When we pass a pointer to a function, the pointer is copied
 // Meaning, we get a copy of the memory address, not the pointer itself
@@ -94,5 +144,23 @@ func main () {
 	// To make it neater, you can use a factory method to do this if needed
 	fmt.Println("Who owns this beautiful classic but modern car?", *golf.owner)
 
+	// As for maps and slices, these are implemented using pointers
+	// So if you pass a map as a function argument, you pass the pointer not a copy
+	// That's why they can be mutated
+	// Generally, the advice is so stay away from maps and use structs as there's nothing you gain from using
+	// maps that you can't gain from using structs
+	// The only exception is that maps are data-structures that allow you to store key-values but you don't 
+	// know the keys during *compile time*
 
+
+	// Slices are a little bit different. They are structs with three fields, length, capacity and pointer to memory
+	// When you pass it as an argument to a function, copies of all three are made
+	// Making a change to the contents reflects back to the original because you're directly addressing the memory
+	// But when you append, you're changing the length of the copy not the original and the changes do not reflect
+	second := 3
+	var g = []int {2, second, 4, 5}
+	multiplySecondValue(g)
+	fmt.Println("Did we mutate G?", g[1] == second * 2, "G => ", g)
+
+	capitalizeNamesFromFile("./sample_data.txt")
 }

@@ -20,7 +20,7 @@ func main() {
 		fmt.Println("Welcome to the clubbb!!")
 	}
 
-	// However go has something else special. Its allow you to create variables exclusive to the 
+	// However go has something else special. Its allow you to create variables exclusive to the
 	// if block like so:
 	if n := rand.Int(); n == 0 {
 		fmt.Println("I can't believe we got a 0")
@@ -32,7 +32,6 @@ func main() {
 
 	// if we try to access n here
 	// fmt.Println("Do we still have something in n? ", n) Go compiler will panic here
-
 
 	///////////////////////////////////////
 	///////// For loop///// //////////////
@@ -60,18 +59,18 @@ func main() {
 		}
 	}
 	// 3. For range
-	colors := [] string {"red", "blue", "green", "purple"}
+	colors := []string{"red", "blue", "green", "purple"}
 	for i, v := range colors { // we get two variables i is the index and v is the value
-		fmt.Println(i + 1, " Color ", v)
+		fmt.Println(i+1, " Color ", v)
 	}
 	// incase you don't need the index
 	for _, v := range colors {
 		fmt.Println(v)
 	}
 	// it also works for maps, let say
-	spells := map[string] int {
-		"hate": 30,
-		"ice": 23,
+	spells := map[string]int{
+		"hate":   30,
+		"ice":    23,
 		"poison": 100,
 	}
 	for k, v := range spells {
@@ -86,7 +85,7 @@ func main() {
 		}
 		fmt.Print("\n")
 	}
-	nums := [] int {1, 2, 3, 4, 5}
+	nums := []int{1, 2, 3, 4, 5}
 	// do note that each iteration is a `copy` and not reference, so
 	for _, num := range nums {
 		num += 10
@@ -98,16 +97,16 @@ func main() {
 	///////// Switch //////////////////////
 	///////////////////////////////////////
 
-	// Switch statements work very much like other languages 
-	
+	// Switch statements work very much like other languages
+
 	for _, color := range colors {
 		switch size := len(color); size {
-			case 0, 1:
-				fmt.Println(color, "What?!?!")
-			case 2, 3, 4, 5:
-				fmt.Println(color ,"Kind of expected")
-			default:
-				fmt.Println(color, "What are these exaggerated complex colors?")
+		case 0, 1:
+			fmt.Println(color, "What?!?!")
+		case 2, 3, 4, 5:
+			fmt.Println(color, "Kind of expected")
+		default:
+			fmt.Println(color, "What are these exaggerated complex colors?")
 
 		}
 	}

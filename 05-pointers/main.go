@@ -10,28 +10,28 @@ import (
 
 type Person struct {
 	name string
-	id int8
+	id   int8
 }
 
-func sayMyNameLoudly (name *string) {
+func sayMyNameLoudly(name *string) {
 	if name != nil {
 		upCaseName := strings.ToUpper(*name)
 		fmt.Println("Ladies and gentlemen, introducing!!!", upCaseName, "Clap everybody!!!")
 	}
 }
 
-func multiplySecondValue (arr []int) {
+func multiplySecondValue(arr []int) {
 	if len(arr) >= 2 {
 		arr[1] *= 2
 	}
 }
 
 // This is pretty bad, haven't yet dealt with IO but excuse me, trying to put a point across
-func capitalizeNamesFromFile (fn string) {
+func capitalizeNamesFromFile(fn string) {
 	file, err := os.Open(fn)
 	if err != nil {
-		fmt.Println("Something went wrong ", err) 
-		return 
+		fmt.Println("Something went wrong ", err)
+		return
 	}
 	defer file.Close()
 	wordCount := 0
@@ -48,10 +48,10 @@ func capitalizeNamesFromFile (fn string) {
 	names := make([]string, 100)
 	for {
 		_, err = file.Read(data)
-		for _, v := range(data) {
+		for _, v := range data {
 			if rune(v) == '\n' {
 				names = append(names, "")
-				wordCount ++
+				wordCount++
 			} else {
 				names[wordCount] += string(v)
 			}
@@ -64,8 +64,8 @@ func capitalizeNamesFromFile (fn string) {
 			return
 		}
 	}
-	
-} 
+
+}
 
 // When we pass a pointer to a function, the pointer is copied
 // Meaning, we get a copy of the memory address, not the pointer itself
@@ -74,21 +74,21 @@ func capitalizeNamesFromFile (fn string) {
 // (Personal take) It helps prevent allocating memory in a function and allocating it to a pointer outside that will out-live the function
 // Plus its better to know that when you pass in a pointer after a function call, you'll still point to the same place
 // the only side-effect is that the value of the pointer.
-func convertNameToUppercase (person *Person) {
+func convertNameToUppercase(person *Person) {
 	if person != nil {
 		person.name = strings.ToUpper(person.name)
 	}
 }
 
-func main () {
+func main() {
 	// Pointers in Go are pretty much like pointers everywhere else
 	a := 10
 	b := &a // B now holds memory address of a
-	fmt.Println("What address is A in", b) 
+	fmt.Println("What address is A in", b)
 
 	// we can declare b like this too
 	var c *int // C now has a value of nil
-	fmt.Println("What is the value of C?",c)
+	fmt.Println("What is the value of C?", c)
 
 	// then we can reassign it later
 	c = &a
@@ -110,22 +110,21 @@ func main () {
 	username := "mini-boss"
 	sayMyNameLoudly(&username)
 
-	miniboss := Person {
+	miniboss := Person{
 		name: "Mini boss",
-		id: 2,
+		id:   2,
 	}
-	// This is now the power of pointers, we can mutate. 
+	// This is now the power of pointers, we can mutate.
 	// Personally, no return type indicates better that we have mutated
 	convertNameToUppercase(&miniboss)
 
 	fmt.Println("What's your name boss? ", miniboss.name)
 
-
 	// Here's a pointers caveat
 	type Vehicle struct {
-		make string
+		make  string
 		owner *string
-		year int
+		year  int
 	}
 	// golf := Vehicle {
 	// 	make: "Golf",
@@ -133,13 +132,13 @@ func main () {
 	// 	year: 2012,
 	// }
 	// Above assignment will panic, because we pass a value instead of pointer. To fix, we need a helper
-	r := func (v string) *string {
+	r := func(v string) *string {
 		return &v
 	}
-	golf := Vehicle {
-		make: "Golf",
+	golf := Vehicle{
+		make:  "Golf",
 		owner: r("Mini-boss"),
-		year: 2012,
+		year:  2012,
 	}
 	// To make it neater, you can use a factory method to do this if needed
 	fmt.Println("Who owns this beautiful classic but modern car?", *golf.owner)
@@ -149,18 +148,17 @@ func main () {
 	// That's why they can be mutated
 	// Generally, the advice is so stay away from maps and use structs as there's nothing you gain from using
 	// maps that you can't gain from using structs
-	// The only exception is that maps are data-structures that allow you to store key-values but you don't 
+	// The only exception is that maps are data-structures that allow you to store key-values but you don't
 	// know the keys during *compile time*
-
 
 	// Slices are a little bit different. They are structs with three fields, length, capacity and pointer to memory
 	// When you pass it as an argument to a function, copies of all three are made
 	// Making a change to the contents reflects back to the original because you're directly addressing the memory
 	// But when you append, you're changing the length of the copy not the original and the changes do not reflect
 	second := 3
-	var g = []int {2, second, 4, 5}
+	var g = []int{2, second, 4, 5}
 	multiplySecondValue(g)
-	fmt.Println("Did we mutate G?", g[1] == second * 2, "G => ", g)
+	fmt.Println("Did we mutate G?", g[1] == second*2, "G => ", g)
 
 	capitalizeNamesFromFile("./sample_data.txt")
 }

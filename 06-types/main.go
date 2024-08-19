@@ -9,8 +9,12 @@ type Speed int
 
 // This is a bad example but imagine this was something else with more complex behavior
 // and edge cases, or could be computed using a complex formula
-func (s Speed) compare(s2 Speed) (equal bool) {
+func (s Speed) compare(s2 Speed) bool {
 	return s2 > s
+}
+
+func (s Speed) Float32() float32 {
+	return float32(3)
 }
 
 // By declaring speed, we tie together the concept of speed for (topSpeed, speed, speedHistory) Vehicle
@@ -56,9 +60,75 @@ func readFakeSpeedHistory(v Vehicle) {
 	// we call a pointer receiver method on a value function argument
 	v.fakeHistory()
 	for i, v := range v.speedHistory {
-		fmt.Printf("[record %d] %dkm/h\n", i+1, v)
+		fmt.Printf("[record %d] %d km/h\n", i+1, v)
 	}
 }
+
+//////////////////////////////////////////////////////////////////////
+//                     IOTA                                         //
+//////////////////////////////////////////////////////////////////////
+
+type DriveTrain int
+
+const (
+	aWD DriveTrain = iota
+	fourWD
+	rearWD
+	frontWD
+)
+
+func (d DriveTrain) String() string {
+	var repr string
+
+	switch d {
+	case aWD:
+		repr = "All"
+	case fourWD:
+		repr = "Four wheel drive"
+	case rearWD:
+		repr = "Rear wheel drive"
+	case frontWD:
+		repr = "Front wheel drive"
+	}
+
+	return repr
+}
+
+//////////////////////////////////////////////////////////////////////
+//                     Embeddings                                   //
+//////////////////////////////////////////////////////////////////////
+
+// Go prefers composition to inheritance because there's none
+// So how do you share code?
+// [[[[EMBEDDINGS]]]]]
+// Truck now has properties of Vehicle and you can access them directly. ie. truck.model
+// However, the two types are not interchangeable. So if a function declares function of type Vehicle, you cannot pass
+// in Truck; but you can pass in truck.Vehicle
+type Truck struct {
+	Vehicle
+	driveTrain      DriveTrain
+	maxAcceleration Speed
+}
+
+func (t Truck) Describe() {
+	fmt.Println("A truck with", t.driveTrain)
+}
+
+// If we create a method in the outer type that shadows one in the embedding, no voodoo is done
+// To call this on an instance truck, call as truck.Accelerate(Speed(30)). To call the Accelerate method on the
+func (t *Truck) Accelerate(by Speed) {
+	acc := 0
+	if by > t.maxAcceleration {
+		acc = int(t.maxAcceleration)
+	} else {
+		acc = int(by)
+	}
+	t.speed = Speed(int(t.speed) + acc)
+}
+
+//////////////////////////////////////////////////////////////////////
+//                     Interfaces                                   //
+//////////////////////////////////////////////////////////////////////
 
 func main() {
 	v := Vehicle{
@@ -96,4 +166,17 @@ func main() {
 	polo.fakeHistory()
 	fmt.Println("Polo history", polo.speedHistory)
 
+	truck := Truck{
+		Vehicle: Vehicle{
+			model: "Range Rover",
+			year:  2010,
+		},
+		driveTrain:      aWD,
+		maxAcceleration: 20,
+	}
+
+	// because of embeddings we can say
+	truck.Accelerate(40)
+	fmt.Printf("The %s is moving at %d km/h\n", truck.model, truck.speed)
+	fmt.Println("Checking vehicle ", truck.Vehicle.model)
 }

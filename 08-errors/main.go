@@ -18,7 +18,7 @@ func calcDivision(a, b int) (exp int, rem int, err error) {
 func madeToPanic() {
 	// A panic is like throwing errors in many languages
 	// A panic can be raised by the Go runtime, but you can also call panic() to exit immediately
-	// The moment that a program panics the executing function will stop further execution, and will execute all the 
+	// The moment that a program panics the executing function will stop further execution, and will execute all the
 	// defer functions is order
 	// Then it will go up the call stack and execute defer too, until it reaches main, where it will call the defer
 	// function there too and quit
@@ -27,8 +27,11 @@ func madeToPanic() {
 		if v := recover(); v != nil {
 			fmt.Println("You stopped this func")
 		}
+	}()
 
-	} ()
+	// The general advice is not to use this pattern for exception handling. Instead, use method below
+	// Panic is reserved for cases where the program cannot recover from
+	// recover() then serves as a means to gracefully shutdown
 	panic("I'm made to panic")
 }
 
@@ -90,6 +93,7 @@ func LoginUser(user, pass string) (string, error) {
 }
 
 func main() {
+
 	_, _, err := calcDivision(3, 0)
 	if err != nil {
 		fmt.Println("This is how error handling is done", err)

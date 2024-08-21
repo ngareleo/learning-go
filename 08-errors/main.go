@@ -15,7 +15,24 @@ func calcDivision(a, b int) (exp int, rem int, err error) {
 	return a / b, a % b, nil
 }
 
-// defining error states 
+func madeToPanic() {
+	// A panic is like throwing errors in many languages
+	// A panic can be raised by the Go runtime, but you can also call panic() to exit immediately
+	// The moment that a program panics the executing function will stop further execution, and will execute all the 
+	// defer functions is order
+	// Then it will go up the call stack and execute defer too, until it reaches main, where it will call the defer
+	// function there too and quit
+	defer func() {
+		// You can listen in on a panic by using
+		if v := recover(); v != nil {
+			fmt.Println("You stopped this func")
+		}
+
+	} ()
+	panic("I'm made to panic")
+}
+
+// defining error states
 
 type Status int
 
@@ -26,18 +43,18 @@ const (
 
 type StatusErr struct {
 	message string
-	status Status
+	status  Status
 }
 
-// To define a struct as an error. 
+// To define a struct as an error.
 // It needs to implement the Error interface by implementing an Error() function.
-func (s StatusErr) Error () string {
+func (s StatusErr) Error() string {
 	return s.message
 }
 
 // We need to implement this method to be able to compare errors using errors.Is(a, b)
 func (s StatusErr) Is(err error) bool {
-	statusErr := err.(StatusErr) 
+	statusErr := err.(StatusErr)
 	return statusErr.status == s.status
 }
 
@@ -49,29 +66,28 @@ func checkPassword(pass string) (string, error) {
 	return "", errors.New("incorrect password")
 }
 
-func grantToken(user string) (string) {
+func grantToken(user string) string {
 	return "dasdsvsdvsewefewf"
 }
 
-func LoginUser (user, pass string) (string, error) {
+func LoginUser(user, pass string) (string, error) {
 
 	_, err := findUserByUsername(user)
 	if err != nil {
 		return "", StatusErr{
 			message: "cannot find user",
-			status: UserNotFound,
+			status:  UserNotFound,
 		}
 	}
 	_, passErr := checkPassword(pass)
 	if passErr != nil {
 		return "", StatusErr{
 			message: "password incorrect",
-			status: InvalidKey,
+			status:  InvalidKey,
 		}
 	}
 	return grantToken(user), nil
-} 
-
+}
 
 func main() {
 	_, _, err := calcDivision(3, 0)
@@ -91,4 +107,6 @@ func main() {
 	if errors.Is(err3, StatusErr{status: UserNotFound}) {
 		fmt.Println("Couldn't find user")
 	}
+
+	madeToPanic()
 }

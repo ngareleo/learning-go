@@ -79,7 +79,6 @@ const (
 
 func (d DriveTrain) String() string {
 	var repr string
-
 	switch d {
 	case aWD:
 		repr = "All"
@@ -90,7 +89,6 @@ func (d DriveTrain) String() string {
 	case frontWD:
 		repr = "Front wheel drive"
 	}
-
 	return repr
 }
 
@@ -116,7 +114,7 @@ func (t Truck) Describe() {
 
 // If we create a method in the outer type that shadows one in the embedding, no voodoo is done
 // To call this on an instance truck, call as truck.Accelerate(Speed(30)). To call the Accelerate method on the
-func (t *Truck) Accelerate(by Speed) {
+func (t Truck) Accelerate(by Speed) {
 	acc := 0
 	if by > t.maxAcceleration {
 		acc = int(t.maxAcceleration)
@@ -126,9 +124,33 @@ func (t *Truck) Accelerate(by Speed) {
 	t.speed = Speed(int(t.speed) + acc)
 }
 
+func (t Truck) Decelerate(by Speed) {
+	minSpeed := 0
+	t.speed -= by
+
+	if t.speed < Speed(minSpeed) {
+		t.speed = Speed(minSpeed)
+	}
+}
+
+func (t Truck) Speed () Speed {
+	return t.speed
+}
 //////////////////////////////////////////////////////////////////////
 //                     Interfaces                                   //
 //////////////////////////////////////////////////////////////////////
+
+type Locomotor interface {
+	Speed() Speed
+	Accelerate(Speed)
+	Decelerate(Speed)
+}
+
+
+const pitLaneLimit = 30
+func pitLaneOverride(l Locomotor) {
+	l.Decelerate(l.Speed() - pitLaneLimit)
+}
 
 func main() {
 	v := Vehicle{
@@ -179,4 +201,6 @@ func main() {
 	truck.Accelerate(40)
 	fmt.Printf("The %s is moving at %d km/h\n", truck.model, truck.speed)
 	fmt.Println("Checking vehicle ", truck.Vehicle.model)
+
+	pitLaneOverride(truck)
 }

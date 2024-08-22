@@ -55,11 +55,35 @@ func runWithTimeLimit[T any](fn func() T, limit time.Duration) (T, error) {
 	}()
 
 	select {
-		case res := <-out:
-			return res, nil
-		case <-ctx.Done():
-			var zero T
-			return zero, errors.New("timeout elapsed")
+	case res := <-out:
+		return res, nil
+	case <-ctx.Done():
+		var zero T
+		return zero, errors.New("timeout elapsed")
+	}
+}
+
+func sayYourName() {
+	ch := make(chan string, 3)
+
+	go func() {
+		fmt.Println("I  Writing to channel 4")
+		time.Sleep(time.Second * 2)
+		ch <- "Kunta Kinte"
+	}()
+
+	go func() {
+		fmt.Println("II Writing to channel 4")
+		time.Sleep(time.Second * 5)
+		ch <- "Kate Harrison"
+	}()
+
+	count := 0
+	for count < 2 {
+		fmt.Println("Reading from channel 4")
+		v := <-ch
+		fmt.Println("What is your name?", v)
+		count++
 	}
 }
 
@@ -98,17 +122,19 @@ func main() {
 
 	useBufferedChannels(20)
 
-	f := func() int {
-		fmt.Println("doing something expensive")
-		time.Sleep(time.Second * 30)
-		return 10
-	}
+	sayYourName()
 
-	_, err := runWithTimeLimit(f, time.Second*10)
+	// f := func() int {
+	// 	fmt.Println("doing something expensive")
+	// 	time.Sleep(time.Second * 30)
+	// 	return 10
+	// }
 
-	if err != nil {
-		fmt.Println("We timed out")
-	}
+	// _, err := runWithTimeLimit(f, time.Second*10)
+
+	// if err != nil {
+	// 	fmt.Println("We timed out")
+	// }
 
 	fmt.Println("Closing channels")
 	close(ch)

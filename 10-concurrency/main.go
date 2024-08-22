@@ -2,24 +2,10 @@ package main
 
 import "fmt"
 
-
 // Go's concurrency is based on Communicating Sequential Processes
 func main() {
 	ch := make(chan string) // We've made a channel
 	ch2 := make(chan string) // another channel
-
-	// Go channels are unbuffered by default
-	// Every write to an open unbuffered channel, causes the writing goroutine to pause
-	// until another goroutine reads from the channel
-	// Likewise, a read from an open channel, causes the reading goroutine to pause until another 
-	// goroutine writes to the channel
-
-
-	// Go also has buffered channels that take certain number of writes until it blocks
-	// This is how we specify a buffered channel
-
-
-	// this is a go routine that will carry on parallel to the main function which is launched as a go routine
 	go func () {
 		// Within this goroutine, we loop a select
 		// The select statement below looks for available next steps. 
@@ -43,10 +29,12 @@ func main() {
 	// So the goroutine above executes
 	fmt.Println("Writing into channel 1")
 	ch <- "Send me something"
-
 	msg := <- ch2
 	fmt.Println("Message from ch2", msg)
-	
+
+	fmt.Println("Closing channels")
+	close(ch)
+	close(ch2)
 	
 	for i := 10; i >= 0; i-- {
 		fmt.Println("Counting the other way", i)

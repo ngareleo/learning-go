@@ -78,12 +78,11 @@ func sayYourName() {
 		ch <- "Kate Harrison"
 	}()
 
-	count := 0
-	for count < 2 {
+	
+	for count := 0; count < 2; count ++ {
 		fmt.Println("Reading from channel 4")
 		v := <-ch
 		fmt.Println("What is your name?", v)
-		count++
 	}
 }
 

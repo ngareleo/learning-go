@@ -44,7 +44,7 @@ func useBufferedChannels(n int) {
 }
 
 func runWithTimeLimit[T any](fn func() T, limit time.Duration) (T, error) {
-	out := make(chan T)
+	out := make(chan T, 1)
 	ctx, cancel := context.WithTimeout(context.Background(), limit)
 
 	defer cancel()
@@ -55,12 +55,11 @@ func runWithTimeLimit[T any](fn func() T, limit time.Duration) (T, error) {
 	}()
 
 	select {
-	case res := <-out:
-		return res, nil
-	case <-ctx.Done():
-		var zero T
-		return zero, errors.New("timeout elapsed")
-
+		case res := <-out:
+			return res, nil
+		case <-ctx.Done():
+			var zero T
+			return zero, errors.New("timeout elapsed")
 	}
 }
 

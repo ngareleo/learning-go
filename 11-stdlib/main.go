@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"learninggo/stdlib/io"
 	"strings"
+	"time"
 )
 
 
@@ -14,4 +15,5 @@ func main() {
 		fmt.Println("Got error", err)
 	}
 	fmt.Println("What's the count?", vals)
+)
 }

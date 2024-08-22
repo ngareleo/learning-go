@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 func useBufferedChannels(n int) {
@@ -33,10 +36,32 @@ func useBufferedChannels(n int) {
 	fmt.Println("Reading from /\\channel 3/\\")
 
 	for i := 0; i < n; i++ {
+		// You will notice that values are read as they are written
 		randoms := <-ch3
 		fmt.Printf("Reading %dth value %d\n", i+1, randoms)
 	}
 	close(ch3)
+}
+
+func runWithTimeLimit[T any](fn func() T, limit time.Duration) (T, error) {
+	out := make(chan T)
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
+
+	defer cancel()
+	defer close(out)
+
+	go func() {
+		out <- fn()
+	}()
+
+	select {
+	case res := <-out:
+		return res, nil
+	case <-ctx.Done():
+		var zero T
+		return zero, errors.New("timeout elapsed")
+
+	}
 }
 
 // Go's concurrency is based on Communicating Sequential Processes
@@ -72,7 +97,19 @@ func main() {
 	msg := <-ch2
 	fmt.Println("Message from /\\channel 2/\\", msg)
 
-	useBufferedChannels(5)
+	useBufferedChannels(20)
+
+	f := func() int {
+		fmt.Println("doing something expensive")
+		time.Sleep(time.Second * 30)
+		return 10
+	}
+
+	_, err := runWithTimeLimit(f, time.Second*10)
+
+	if err != nil {
+		fmt.Println("We timed out")
+	}
 
 	fmt.Println("Closing channels")
 	close(ch)

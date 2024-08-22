@@ -31,6 +31,11 @@ func spiralPrint(spiral [][]int) (out []int) {
 	return
 }
 
+// mapXYToCoordinate takes the position (x, y) of the element in the grid and the size of the grid
+// To print the grid elements in a spiral pattern, first we print the top row, then the right column, then the bottom row, 
+// then the left column. That means that: 
+// Given a fixed sized grid the value at (x, y) will end up at a predictable position in a flat list
+// of the elements of the grid drawn in a spiral
 func mapXYToCoordinate(x, y, sizeX, sizeY int) int {
 	return 0
 }
@@ -38,7 +43,7 @@ func mapXYToCoordinate(x, y, sizeX, sizeY int) int {
 func main() {
 	arr := [][]int{
 		{0, 1, 2, 3, 4, 5},
-		{6, 7, 8, 9, 10, 11},
+		{6, 7, 8, 9, 10, 11},	
 		{12, 13, 14, 15, 16, 17},
 		{18, 19, 20, 21, 22, 23},
 	}
